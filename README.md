@@ -3,3 +3,11 @@
 * [PHT_Node](https://github.com/CaspervanAarle/PHT_Node)
 
 # PHT_Server
+This PHT_Server implements Federated Stochastic Gradient Descent as an aggregation method to apply Linear Regression. Aggregators and Classifiers can be altered easily.
+
+## Usage
+Open a terminal: ```cd src``` ```python main.py```
+
+To add new Locker addresses, create a new config. Both the ip-address and port from the locker must be provided.
+
+
