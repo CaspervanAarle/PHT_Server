@@ -10,13 +10,14 @@ import time
 import subprocess
 from os import path
 
-settings_directory = "..//settings//config_{}.json"
-config_name = "experiment"
-locker_count = 100
+# edit:
+locker_count = 20
 
+
+SETTINGS_DIRECTORY = "..//settings//config_{}.json"
+CONFIG_NAME = "experiment"
 # For this experiment, the lockers all reside on one location
 STATIC_LOCKER_IP = "192.168.0.24"
-
 # The lockers will be generated from the following port interatively
 STATIC_LOCKER_PORT = 5050
 
@@ -25,11 +26,10 @@ def new_config():
     out['lockers'] = []
     locker = {}
     
-    out['config_name'] = config_name
-    if(path.exists(settings_directory.format(config_name))):
+    out['config_name'] = CONFIG_NAME
+    if(path.exists(SETTINGS_DIRECTORY.format(CONFIG_NAME))):
         print("[WARNING] Overwriting existing config")
     
-    request_input = True
     for i in range(locker_count):
         locker['locker_ip'] = STATIC_LOCKER_IP
         
@@ -38,11 +38,11 @@ def new_config():
         out['lockers'].append(locker.copy())
     
     
-    with open(settings_directory.format(config_name),'w') as f:
+    with open(SETTINGS_DIRECTORY.format(CONFIG_NAME),'w') as f:
         json.dump(out, f)
     return out
 
 
 new_config()
-subprocess.run('start python main.py -c config_{}.json'.format(config_name), shell=True)
+subprocess.run('start python main.py -c config_{}.json'.format(CONFIG_NAME), shell=True)
 
