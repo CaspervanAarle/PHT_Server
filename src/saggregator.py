@@ -8,7 +8,7 @@ Created on Thu Mar 25 00:36:32 2021
 import threading, queue
 import time
 
-TIMEOUT = 10
+TIMEOUT = 25
 
 finished = False
 
@@ -26,7 +26,6 @@ def request(connections, message):
         return
     print(f"[INFO] Server data from {len(list(q.queue))} nodes after finishing")
     return list(q.queue)
-            
     
 def aggregate_results(q, connections, message):
     threads = [threading.Thread(target=data_request, args=(q, c, message)) for c in connections]

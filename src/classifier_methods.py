@@ -36,16 +36,42 @@ class LinReg():
     
 class LogReg():
     def __init__(self, hidden_units):
-        pass
+        self.m = np.random.normal(loc=0.0, scale=1.0, size=hidden_units)
+        self.c = 0
 
-    def call(self, inputs):
-        pass
+    def call(self, X):
+        return self._sigmoid(np.dot(X, self.m) + self.c)
 
     def gradient(self, X, Y):
-        pass
+        X = np.array(X)
+        Y = np.array(Y)
+        
+        Y_sig = self.call(X)
+        # Computes the gradient of the cost function at the point theta
+        print(self.cost(X,Y))
+        return (1 / len(X)) * np.dot(X.T, Y_sig - Y)
     
     def get_weights(self):
-        pass
+        return (self.m, self.c)
     
     def set_weights(self, value):
-        pass
+        self.m = value[0]
+        self.c = value[1]
+        return 
+    
+    def cost(self, X, Y):
+        '''
+        Cost = (labels*log(predictions) + (1-labels)*log(1-predictions) ) / len(labels)
+        '''
+        X = np.array(X)
+        Y = np.array(Y)
+        predictions = self.call(X)
+    
+        class1_cost = -Y*np.log(predictions)
+        class2_cost = (1-Y)*np.log(1-predictions)
+        cost = class1_cost - class2_cost
+        return cost.sum() / len(X)
+        
+    def _sigmoid(self, x):
+        # Activation function used to map any real value between 0 and 1
+        return 1 / (1 + np.exp(-x))

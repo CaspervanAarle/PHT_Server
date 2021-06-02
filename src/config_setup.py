@@ -41,7 +41,7 @@ def new_config():
             request_input = True
         if Fl == 'n': 
             request_input = False
-        out['lockers'].append(locker)
+        out['lockers'].append(locker.copy())
     
     
     with open(goal_dir,'w') as f:
