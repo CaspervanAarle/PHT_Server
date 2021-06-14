@@ -3,7 +3,7 @@
 * [PHT_Node](https://github.com/CaspervanAarle/PHT_Node)
 
 # PHT_Server
-This PHT_Server implements Federated Stochastic Gradient Descent as an aggregation method to apply Linear Regression. Aggregators and Classifiers can be altered easily.
+This PHT_Server implements Federated Stochastic Gradient Descent as an aggregation method to apply Linear Regression. Aggregators and Classifiers can be altered easily. Due to the need for simulating numerous Personal Data Stores, importing big libraries is omitted.
 
 ## Usage
 Open a terminal: ```cd src``` ```python main.py```
