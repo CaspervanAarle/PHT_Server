@@ -12,7 +12,6 @@ class LinReg():
         self.hidden_units = hidden_units
         self.m = np.random.normal(loc=0.0, scale=1.0, size=hidden_units)
         self.c = 0
-        self.L = 0.05
 
     def call(self, inputs):
         return np.dot(inputs, self.m) + self.c
@@ -21,8 +20,6 @@ class LinReg():
         Y_pred = np.dot(X, self.m) + self.c  # The current predicted value of Y=
         D_m = (-2/float(len(X))) * np.dot((Y - Y_pred), X)  # Derivative wrt m
         D_c = (-2/float(len(X))) * sum(Y - Y_pred)  # Derivative wrt c
-        #self.m = self.m - self.L * D_m  # Update m
-        #self.c = self.c - self.L * D_c  # Update c
         return D_m, D_c
     
     def get_weights(self):

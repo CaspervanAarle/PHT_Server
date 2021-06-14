@@ -4,30 +4,19 @@ Created on Tue Apr 20 12:44:22 2021
 
 @author: Casper
 """
+import random
 
-import time
+def set_request_message(message, request):
+    w = [*message]
+    w.append(request)
+    wt = *w,
+    return wt
 
-class EarlyStopper():
-    def __init__(self):
-        self.TOL = 10 ** -7
-        self.TOL_COUNT_THRESHOLD = 4
-        self.tol_count = 0
-        
-        self.previous_loss = 10 ** 7 #=infinity
-        
-    
-    def check_terminate(self, loss):
-        if( (self.previous_loss - loss) < self.TOL):
-            self.previous_loss = loss
-            self.tol_count +=1
-            print("loss minimum found")
-            time.sleep(1)
-            if self.tol_count >= self.TOL_COUNT_THRESHOLD:
-                return True
-            else:
-                return False
-        else:
-            self.tol_count = 0
-            self.previous_loss = loss
-            return False
-        
+def split(connections, seed, test_split):
+    locker_amount = len(connections)
+    indices = list(range(locker_amount))
+    random.Random(seed).shuffle(indices)
+    training_indices, testing_indices = indices[:int(test_split*locker_amount)], indices[int(test_split*locker_amount):]
+    print(training_indices)
+    print(testing_indices)
+    return [connections[i] for i in training_indices], [connections[i] for i in testing_indices]

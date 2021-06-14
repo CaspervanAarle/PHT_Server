@@ -53,6 +53,9 @@ class IPC_Client():
             msg = self.socket.recv(msg_length)
             msg = pickle.loads(msg)
             return msg
-
+    def __repr__(self):
+        return "Connection: {}, {}".format(self.host, self.port)
+    def __str__(self):
+        return "Connection: {}, {}".format(self.host, self.port)
 
 

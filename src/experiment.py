@@ -11,14 +11,16 @@ import subprocess
 from os import path
 
 # edit:
-locker_count = 20
+locker_count = 10
 
 
 SETTINGS_DIRECTORY = "..//settings//config_{}.json"
 CONFIG_NAME = "experiment"
+LEARNCONFIG_NAME = "experiment"
+
 # For this experiment, the lockers all reside on one location
 STATIC_LOCKER_IP = "192.168.0.24"
-# The lockers will be generated from the following port interatively
+# The lockers will be generated from the following port iteratively
 STATIC_LOCKER_PORT = 5050
 
 def new_config():
@@ -37,12 +39,12 @@ def new_config():
         
         out['lockers'].append(locker.copy())
     
-    
     with open(SETTINGS_DIRECTORY.format(CONFIG_NAME),'w') as f:
         json.dump(out, f)
     return out
 
 
+
 new_config()
-subprocess.run('start python main.py -c config_{}.json'.format(CONFIG_NAME), shell=True)
+subprocess.run('start python main.py -c config_{}.json -l learnconfig_{}.json'.format(CONFIG_NAME, LEARNCONFIG_NAME), shell=True)
 

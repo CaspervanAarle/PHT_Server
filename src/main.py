@@ -4,62 +4,81 @@ Created on Mon Apr  5 16:00:45 2021
 
 @author: Casper
 """
-    
+import sys
+current_module = sys.modules[__name__]
 import saggregator
 import numpy as np
 import config_setup
-import datetime
 import out
 import time
-from random import randint
-import random
 
 # import the correct algorithm:
 from classifier_methods import LinReg, LogReg
 from optimizers import SGD_Optimizer, AdaGrad_Optimizer
-from other import EarlyStopper
+from earlystopper import EarlyStopper
+import other
+from sklearn.model_selection import ShuffleSplit, train_test_split
 
 # homomorphic encryption for mean and average
 from phe import paillier
 
 # import socket protocol
-from ipc_client import IPC_Client  
+from ipc_client import IPC_Client 
 
-# ADJUSTABLE PARAMETERS:
-MAX_ITER = 200
-model_class = LinReg
+# regularization constant
+REG_CONSTANT = 1
+# train-test splitting:
+TEST_SPLIT = 0.5
+# shufflesplit settings:
+AMOUNT_OF_ITERATIONS = 5 # only used in shufflesplit optimization
+VALIDATION_SPLIT = 0.2   # only used in shufflesplit optimization
 
-var_list = ["F1",	"F2",	"F3",	"F4",	"F5",	"F6",	"F7",	"F8",	"F9"]
-target_list = ["RMSD"]
-test_split = 0
-optimizer = AdaGrad_Optimizer
-#learning_rate=0.05
-is_experiment = True
-# lr: SGD=0.05, AdaGra=5/50
-lr = 5000
-
-def learning_loop():   
+def start():   
+    # setup
     connections = []
-    config = config_setup.setup()
+    config, learn_settings = config_setup.setup()
+    print(str(config).replace(', ',',\n '))
+    print(str(learn_settings).replace(', ',',\n '))
+    
     # connect with corresponding lockers
     for locker in config['lockers']:
         conn = IPC_Client(locker['locker_ip'], locker['host_port'])
         if(conn.connect()):
             connections.append(conn)
             print("Locker connected: " + locker['locker_ip'] + " " + locker['host_port'])
+    #print(connections)
     assert len(connections) > 0
     
-    # shuffle connections
-    if(test_split > 0):
-        if(is_experiment):
-            conn_training, conn_test = split(connections, 1)
-        else:
-            conn_training, conn_test = split(connections, randint(0, 1000))
+    ### train-test split       
+    if(TEST_SPLIT > 0):
+        conn_train_valid, conn_test = train_test_split(connections, test_size=TEST_SPLIT, random_state=0)
     else:
-        conn_training, conn_test = connections, []
-    model = model_class([len(var_list)])
-    otm = optimizer(model, lr)
+        conn_train_valid, conn_test = connections, []
+    print("test size: {}".format(len(conn_test)))
+            
+    ### shufflesplit optimization         
+    if(learn_settings["mode"] == "SHUFFLESPLIT"):
+        rs = ShuffleSplit(n_splits=AMOUNT_OF_ITERATIONS, test_size=VALIDATION_SPLIT, random_state=0)
+        loss_list = []
+        for train_index, validation_index in rs.split(list(range(len(conn_train_valid)))):
+            print("TRAIN:", train_index, "\nVALIDATION:", validation_index)
+            loss = train_model(np.array(conn_train_valid)[train_index], np.array(conn_train_valid)[validation_index], learn_settings)
+            loss_list.append(loss)
+        out.save_multi_result(loss_list)
+        
+    ### normal training    
+    if(learn_settings["mode"] == "NORMAL"):
+        loss = train_model(conn_train_valid, conn_test, learn_settings)
     
+def train_model(conn_training, conn_test, learn_settings):
+    print("Training set size: {}".format(len(conn_training)))
+    print("validation set size: {}".format(len(conn_test)))
+    
+    model_class = getattr(current_module, learn_settings["regressor"])
+    model = model_class([len(learn_settings["var_list"])])
+    
+    optimizer = getattr(current_module, learn_settings["optimizer"] + '_Optimizer')
+    otm = optimizer(model, learn_settings["learning_rate"])
     
     # main learning loop:
     weights = model.get_weights()
@@ -68,24 +87,27 @@ def learning_loop():
     print("[INFO] starting learning loop")
     
     ### request encrypted means
-    wt = set_request_message(["",""], 3)
+    wt = other.set_request_message(["",""], 3)
     l_n = saggregator.request(conn_training, wt)
     print(l_n)
     enc_means = [sum(i)/len(conn_training) for i in zip(*l_n)]
-    wt = set_request_message([enc_means,""], 4)
+    wt = other.set_request_message([enc_means,""], 4)
     l_n = saggregator.request(conn_training, wt)
+    l_n = saggregator.request(conn_test, wt)
     
     ### request encrypted stdev
-    wt = set_request_message(["",""], 5)
+    wt = other.set_request_message(["",""], 5)
     l_n = saggregator.request(conn_training, wt)
     enc_stdev = [sum(i)/len(conn_training) for i in zip(*l_n)]
-    wt = set_request_message([enc_stdev,""], 6)
+    wt = other.set_request_message([enc_stdev,""], 6)
     l_n = saggregator.request(conn_training, wt)
+    l_n = saggregator.request(conn_test, wt)
     
     i = 0
-    while i < MAX_ITER:
+    while i < learn_settings["max_iter"]:
+        print("Iteration: {}".format(i+1))
         ### lockers request
-        wt = set_request_message(weights, 1)
+        wt = other.set_request_message(weights, 1)
         print(wt)
         l_n = saggregator.request(conn_training, wt)
         ### data aggregeren
@@ -95,62 +117,57 @@ def learning_loop():
         
         ### check training loss
         if(len(conn_training) > 0):
-            wt = set_request_message(weights, 0)
+            wt = other.set_request_message(weights, 0)
             loss_list = saggregator.request(conn_training, wt)
             metric_train = sum(loss_list)/len(conn_training)
             print("train loss: {}".format(metric_train))
         
         
         ### check validation loss
+        """
         if(len(conn_test) > 0):
             wt = set_request_message(weights, 0)
             loss_list = saggregator.request(conn_test, wt)
             metric_test = sum(loss_list)/len(conn_test)
             print("test loss: {}".format(metric_test))
-            if earlystopper.check_terminate(metric_test):
-                break
-        else:
-            if earlystopper.check_terminate(metric_train):
-                break
+        """
+            
+        # check if minimum loss is reached
+        if earlystopper.check_terminate(metric_train):
+            break
         
-        ### accuracy request (only for logistic regression)
-        #wt = set_request_message(weights, 2)
-        #accuracy = sum(saggregator.request(conn_training, wt))/len(conn_training)
-        #print("accuracy: {}".format(accuracy))
         
     ### loss request (use test data if available)
-    wt = set_request_message(weights, 0)
+    
+    wt = other.set_request_message(weights, 0)
     if(len(conn_test) > 0):
         loss = sum(saggregator.request(conn_test, wt))/len(conn_test)
     else:
         loss = sum(saggregator.request(conn_training, wt))/len(conn_training)
+   
+    ### accuracy request (only for logistic regression)
+    #wt = set_request_message(weights, 2)
+    #accuracy = sum(saggregator.request(conn_training, wt))/len(conn_training)
+    #print("accuracy: {}".format(accuracy))
+    
     
     ### accuracy request (only for logistic regression)
-    wt = set_request_message(weights, 2)
+    # wt = set_request_message(weights, 2)
     #accuracy = sum(saggregator.request(conn_training, wt))/len(conn_training)
     
     out.save_result(i+1, weights, loss)
+    return loss
     
-
-def set_request_message(message, request):
-    w = [*message]
-    w.append(request)
-    wt = *w,
-    return wt
-
-def split(connections, seed):
-    locker_amount = len(connections)
-    indices = list(range(locker_amount))
-    random.Random(seed).shuffle(indices)
-    print(indices)
-    training_indices, testing_indices = indices[:int(test_split*locker_amount)], indices[int(test_split*locker_amount):]
-    return [connections[i] for i in training_indices], [connections[i] for i in testing_indices]
 
    
     
 if __name__ == "__main__" :
         print("[INFO] server is starting...")
-        learning_loop()
+        try:
+            start()
+        except Exception as e:
+            print("[ERROR] {}".format(e))
+            time.sleep(20)
         
         
         

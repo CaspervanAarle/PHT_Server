@@ -7,19 +7,19 @@ Created on Sat Mar 27 17:38:41 2021
 
 
 import numpy as np
-from numpy import inf
 
 
 class SGD_Optimizer():
-    def __init__(self, model, learning_rate=0.05):
+    def __init__(self, model, learning_rate=0.05, reg=0.0):
         self.model = model
         self.eta = learning_rate
+        self.reg=reg
         
         
     def update_weights(self, l):   
         # gradient averaging:
-        d_weights = np.sum([la[0] for la in l], axis=0)/len(l)
-        d_bias = sum([la[1] for la in l])/len(l)
+        d_weights = (np.sum([la[0] for la in l], axis=0) + self.reg*self.model.get_weights()[0])/len(l)
+        d_bias = sum([la[1] for la in l])/len(l) + 2*self.reg*self.model.get_weights()[1]
         
         # update current weights with gradient:
         new_weights = self.model.get_weights()[0] - self.eta * d_weights
