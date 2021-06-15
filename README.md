@@ -8,8 +8,6 @@ This PHT_Server implements Federated Stochastic Gradient Descent as an aggregati
 
 
 ## Usage
-### Homomorphic Encryption
-Before deploying this software to real distributed environment, be sure to share the same public and private keys over the PDS's. It automatically generates with ```main.py``` and ```experiment.py```.
 
 ### Server
 Open a terminal: ```cd src``` ```python main.py```
