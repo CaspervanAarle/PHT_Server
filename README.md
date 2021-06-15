@@ -18,6 +18,7 @@ By starting ```python main.py``` without any arguments, you can choose between e
 }
 ```
 A second learnconfig file must be created or chosen, which includes all hyperparameters for the learning session.
+```
 {
 	"config_name": "experiment",
 	"learning_rate": 0.05,
@@ -31,7 +32,7 @@ A second learnconfig file must be created or chosen, which includes all hyperpar
 	"calc_train_loss": true,
 	"calc_test_loss": true
 }
-
+```
 
 ### Local Experiment 
 The  ```experiment.py``` generates a config file containing locations of an amount of local PDS's. Afterward, it initializes the server with this config file and a learnconfig file containing hyperparameters for the learning session. Examples can be found in the settings directory.
