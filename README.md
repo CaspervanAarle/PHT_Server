@@ -17,7 +17,7 @@ By starting ```python main.py``` without any arguments, you can choose between e
   "config_name": "experiment"
 }
 ```
-A second 'learnconfig' file must be created (to be implemented) or chosen, which includes all hyperparameters for the learning session. Manual creation is also possible.
+A second 'learnconfig' file must be created (to be implemented) or chosen, which includes all hyperparameters for the learning session. Manual creation is also possible. A regularization term can be added ```"regularization": true``` when SGD optimizer and LogReg model are used
 ```
 {
 	"config_name": "experiment",
@@ -35,4 +35,6 @@ A second 'learnconfig' file must be created (to be implemented) or chosen, which
 ```
 
 ### Local Experiment 
-The  ```experiment.py``` generates a config file containing locations of an amount of local PDS's. Afterward, it initializes the server with this config file and a learnconfig file containing hyperparameters for the learning session. Examples can be found in the settings directory.
+The  ```experiment.py``` generates a config file containing locations of an amount of local PDS's. Instead of manually typing all PDS locations in a config file, this automates the process. Afterward, it initializes the server with this config file and a learnconfig file containing hyperparameters for the learning session. Examples can be found in the settings directory. Some extra parameters must be defined in the ```experiment.py``` file, such as the ```locker amount```, ```learnconfig_name```, local ip, and port range to connect to. The selected ports must run PDS's (PHT_Node), so for experiments you should keep the port range identical in the PHT_Node ```experiment.py``` file.
+
+For initialization, a definition of the amount of lockers and the 
