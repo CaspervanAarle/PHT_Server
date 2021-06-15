@@ -4,12 +4,17 @@ Created on Sat Mar 27 17:38:41 2021
 
 @author: Casper
 """
-
-
 import numpy as np
+import abc
 
 
-class SGD_Optimizer():
+class CustomOptimizer(abc.ABC):
+    @abc.abstractmethod
+    def update_weights(self, l):
+        pass
+
+
+class SGD_Optimizer(CustomOptimizer):
     def __init__(self, model, learning_rate=0.05, reg=0.0):
         self.model = model
         self.eta = learning_rate
@@ -29,14 +34,13 @@ class SGD_Optimizer():
         self.model.set_weights((new_weights, new_bias))
         
         # terminal output:
-        print("[INFO] aggregated gradients and update weights:")
-        print(self.model.get_weights())
+        print("[INFO] aggregated gradients and update weights: {}".format(self.model.get_weights()))
         
         # return copy of the weights for reference:
         return self.model.get_weights()
         
         
-class AdaGrad_Optimizer():
+class AdaGrad_Optimizer(CustomOptimizer):
     # adagrad parameters:
     def __init__(self, model, learning_rate=50):
         self.model = model
@@ -57,8 +61,7 @@ class AdaGrad_Optimizer():
         self.model.set_weights((w, b))
         
         # terminal output:
-        print("[INFO] aggregated gradients and update weights:")
-        print(self.model.get_weights())
+        print("[INFO] aggregated gradients and update weights: {}".format(self.model.get_weights()))
         
         # return copy of the weights for reference:
         return self.model.get_weights()

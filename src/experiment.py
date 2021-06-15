@@ -15,8 +15,8 @@ locker_count = 10
 
 
 SETTINGS_DIRECTORY = "..//settings//config_{}.json"
-CONFIG_NAME = "experiment"
-LEARNCONFIG_NAME = "experiment"
+CONFIG_NAME = "experiment" # connection config
+LEARNCONFIG_NAME = "experiment4" # learning hyperparameters config
 
 # For this experiment, the lockers all reside on one location
 STATIC_LOCKER_IP = "192.168.0.24"

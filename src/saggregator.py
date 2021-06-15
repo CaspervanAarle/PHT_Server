@@ -7,6 +7,7 @@ Created on Thu Mar 25 00:36:32 2021
 
 import threading, queue
 import time
+import other
 
 TIMEOUT = 25
 
@@ -14,6 +15,7 @@ finished = False
 
     
 def request(connections, message):
+    print("[INFO] Sending {} requests to {} nodes".format(other.get_requests_list()[message[2]],len(connections)))
     q = queue.Queue()
     thread = threading.Thread(target=aggregate_results, args=(q, connections, message))
     thread.start()

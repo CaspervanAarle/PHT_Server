@@ -20,3 +20,6 @@ def split(connections, seed, test_split):
     print(training_indices)
     print(testing_indices)
     return [connections[i] for i in training_indices], [connections[i] for i in testing_indices]
+
+def get_requests_list():
+    return ['calc_loss', 'learn', 'acc', 'mean_get', 'mean_set', 'std_get', 'std_set']
