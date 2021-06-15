@@ -5,7 +5,8 @@
 # PHT_Server
 This PHT_Server implements Federated Stochastic Gradient Descent as an aggregation method to apply Linear Regression. Aggregators and Classifiers can be altered easily. Due to the need for simulating numerous Personal Data Stores (PDS), importing big libraries is omitted. A semi-privacy-preserving Homomorphic Encrypted Standardization method and AdaGrad is included for better convergence.
 
-
+## Homomorphic Encryption
+Before deploying this software to real distributed environment, be sure to share the same public and private keys over the PDS's. It automatically generates with ```main.py``` and ```experiment.py```.
 
 ## Usage
 ### Server
@@ -35,6 +36,6 @@ A second 'learnconfig' file must be created (to be implemented) or chosen, which
 ```
 
 ### Local Experiment 
-The  ```experiment.py``` generates a config file containing locations of an amount of local PDS's. Instead of manually typing all PDS locations in a config file, this automates the process. Afterward, it initializes the server with this config file and a learnconfig file containing hyperparameters for the learning session. Examples can be found in the settings directory. Some extra parameters must be defined in the ```experiment.py``` file, such as the ```locker amount```, ```learnconfig_name```, local ip, and port range to connect to. The selected ports must run PDS's (PHT_Node), so for experiments you should keep the port range identical in the PHT_Node ```experiment.py``` file.
+The  PHT_Server ```experiment.py``` generates a config file containing locations of an amount of local PDS's. Instead of manually typing all PDS locations in a config file, this automates the process. Afterward, it initializes the server with this config file and a learnconfig file containing hyperparameters for the learning session. Examples can be found in the settings directory. Some extra parameters must be defined in the ```experiment.py``` file, such as the ```locker amount```, ```learnconfig_name```, local ip, and port range to connect to. The selected ports must run PDS's (PHT_Node), so for experiments you should keep the port range identical in the PHT_Node ```experiment.py``` file.
 
-For initialization, a definition of the amount of lockers and the 
+
