@@ -3,7 +3,7 @@
 * [PHT_Node](https://github.com/CaspervanAarle/PHT_Node)
 
 # PHT_Server
-This PHT_Server implements Federated Stochastic Gradient Descent as an aggregation method to apply Linear Regression. Aggregators and Classifiers can be altered easily. Due to the need for simulating numerous Personal Data Stores (PDS), importing big libraries is omitted. A semi-privacy-preserving Homomorphic Encrypted Standardization method and AdaGrad is included for better convergence.
+This PHT_Server implements part of a Federated Learning algorithm to apply Regression. Aggregators and Classifiers can be altered easily. Due to the need for simulating numerous Personal Data Stores (PDS), importing big libraries is omitted. A semi-privacy-preserving Homomorphic Encrypted Standardization method and AdaGrad is included for better convergence.
 
 
 
