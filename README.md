@@ -5,10 +5,12 @@
 # PHT_Server
 This PHT_Server implements Federated Stochastic Gradient Descent as an aggregation method to apply Linear Regression. Aggregators and Classifiers can be altered easily. Due to the need for simulating numerous Personal Data Stores (PDS), importing big libraries is omitted. A semi-privacy-preserving Homomorphic Encrypted Standardization method and AdaGrad is included for better convergence.
 
-## Homomorphic Encryption
-Before deploying this software to real distributed environment, be sure to share the same public and private keys over the PDS's. It automatically generates with ```main.py``` and ```experiment.py```.
+
 
 ## Usage
+### Homomorphic Encryption
+Before deploying this software to real distributed environment, be sure to share the same public and private keys over the PDS's. It automatically generates with ```main.py``` and ```experiment.py```.
+
 ### Server
 Open a terminal: ```cd src``` ```python main.py```
 By starting ```python main.py``` without any arguments, you can choose between existing 'config' files in the settings directory. The interface also provides the possibility to create a new config file. A config file can also be manually created. This file contains info on locations of multiple PDS's. 
