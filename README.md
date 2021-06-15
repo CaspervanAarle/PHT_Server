@@ -10,14 +10,27 @@ This PHT_Server implements Federated Stochastic Gradient Descent as an aggregati
 ## Usage
 ### Server
 Open a terminal: ```cd src``` ```python main.py```
-By starting ```python main.py``` without any arguments, you can choose between existing config files in the settings directory. The interface also provides the possibility to create a new config file. A config file can also be manually created. This file contains info on locations of multiple PDS's. A second learnconfig file must be created or chosen, which includes all hyperparameters for the learning session.
+By starting ```python main.py``` without any arguments, you can choose between existing config files in the settings directory. The interface also provides the possibility to create a new config file. A config file can also be manually created. This file contains info on locations of multiple PDS's. 
 ```
 {
   "lockers": [{"locker_ip": "192.168.0.24", "host_port": "5050"}, {"locker_ip": "192.168.0.24", "host_port": "5051"}], 
   "config_name": "experiment"
 }
 ```
-
+A second learnconfig file must be created or chosen, which includes all hyperparameters for the learning session.
+{
+	"config_name": "experiment",
+	"learning_rate": 0.05,
+	"max_iter": 200,
+	"var_list": ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9"],
+	"target_list":	["RMSD"],
+	"regressor": "LinReg", #LinReg/LogReg
+	"mode": "NORMAL", #NORMAL/SHUFFLESPLIT
+	"optimizer": "AdaGrad", #AdaGrad/SGD
+	"standardization": true,
+	"calc_train_loss": true,
+	"calc_test_loss": true
+}
 
 
 ### Local Experiment 
