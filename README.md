@@ -2,7 +2,7 @@
 * [PHT_Server](https://github.com/CaspervanAarle/PHT_Server) (You are here)
 * [PHT_Node](https://github.com/CaspervanAarle/PHT_Node)
 
-![alt text](https://github.com/CaspervanAarle/PHT_Server/blob/master/other/server_screenshot.JPG | width=100)
+![alt text](https://github.com/CaspervanAarle/PHT_Server/blob/master/other/server_screenshot.JPG =250x250)
 
 # PHT_Server
 This repository is part of the Personal Health Train Locker Thesis. This PHT_Server implements part of a Federated Learning algorithm to apply Regression. Aggregators and Classifiers can be altered easily. Due to the need for simulating numerous Personal Data Stores (PDS), importing big libraries is omitted. A semi-privacy-preserving Homomorphic Encrypted Standardization method and AdaGrad is included for better convergence.
