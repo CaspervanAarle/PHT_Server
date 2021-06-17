@@ -26,7 +26,7 @@ from phe import paillier
 from ipc_client import IPC_Client 
 
 # train-test splitting:
-TEST_SPLIT = 0.5
+TEST_SPLIT = 0.4
 # shufflesplit settings:
 AMOUNT_OF_ITERATIONS = 5 # only used in shufflesplit optimization
 VALIDATION_SPLIT = 0.2   # only used in shufflesplit optimization
@@ -47,26 +47,27 @@ def start():
             print("Locker connected: " + locker['locker_ip'] + " " + locker['host_port'])
     assert len(connections) > 0
     
-    ### 2) train-test split       
-    if(TEST_SPLIT > 0):
-        conn_train_valid, conn_test = train_test_split(connections, test_size=TEST_SPLIT, random_state=0)
-    else:
-        conn_train_valid, conn_test = connections, []
-    print("test size: {}".format(len(conn_test)))
+    for i in range(2,12):
+        ### 2) train-test split       
+        if(TEST_SPLIT > 0):
+            conn_train_valid, conn_test = train_test_split(connections, test_size=TEST_SPLIT, random_state=i)
+        else:
+            conn_train_valid, conn_test = connections, []
+        print("test size: {}".format(len(conn_test)))
+                
+        ### 2.1) shufflesplit optimization         
+        if(learn_settings["mode"] == "SHUFFLESPLIT"):
+            rs = ShuffleSplit(n_splits=AMOUNT_OF_ITERATIONS, test_size=VALIDATION_SPLIT, random_state=0)
+            loss_list = []
+            for train_index, validation_index in rs.split(list(range(len(conn_train_valid)))):
+                print("TRAIN:", train_index, "\nVALIDATION:", validation_index)
+                loss = train_model(np.array(conn_train_valid)[train_index], np.array(conn_train_valid)[validation_index], learn_settings)
+                loss_list.append(loss)
+            out.save_multi_result(loss_list)
             
-    ### 2.1) shufflesplit optimization         
-    if(learn_settings["mode"] == "SHUFFLESPLIT"):
-        rs = ShuffleSplit(n_splits=AMOUNT_OF_ITERATIONS, test_size=VALIDATION_SPLIT, random_state=0)
-        loss_list = []
-        for train_index, validation_index in rs.split(list(range(len(conn_train_valid)))):
-            print("TRAIN:", train_index, "\nVALIDATION:", validation_index)
-            loss = train_model(np.array(conn_train_valid)[train_index], np.array(conn_train_valid)[validation_index], learn_settings)
-            loss_list.append(loss)
-        out.save_multi_result(loss_list)
-        
-    ### 2.2) normal training    
-    if(learn_settings["mode"] == "NORMAL"):
-        loss = train_model(conn_train_valid, conn_test, learn_settings)
+        ### 2.2) normal training    
+        if(learn_settings["mode"] == "NORMAL"):
+            loss = train_model(conn_train_valid, conn_test, learn_settings)
     
 def train_model(conn_training, conn_test, learn_settings):
     print("Training set size: {}".format(len(conn_training)))
@@ -83,8 +84,6 @@ def train_model(conn_training, conn_test, learn_settings):
     else:
         otm = optimizer(model, learn_settings["learning_rate"])
     
-    # main learning loop:
-    weights = model.get_weights()
     # termination object
     earlystopper = EarlyStopper()
     
@@ -110,6 +109,7 @@ def train_model(conn_training, conn_test, learn_settings):
     while i < learn_settings["max_iter"]:
         print("Iteration: {}".format(i+1))
         ### lockers request
+        weights = model.get_weights()
         wt = other.set_request_message(weights, 1)
         l_n = saggregator.request(conn_training, wt)
         ### data aggregeren
