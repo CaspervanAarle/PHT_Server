@@ -22,4 +22,4 @@ def split(connections, seed, test_split):
     return [connections[i] for i in training_indices], [connections[i] for i in testing_indices]
 
 def get_requests_list():
-    return ['calc_loss', 'learn', 'acc', 'mean_get', 'mean_set', 'std_get', 'std_set']
+    return ['calc_loss', 'learn', 'acc', 'mean_get', 'mean_set', 'std_get', 'std_set', 'secret_share1', 'secret_share2', 'derivative_sec_agg', 'standardize_sec_agg', 'scale_get', 'scale_set']

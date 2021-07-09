@@ -9,7 +9,7 @@ import datetime
 import numpy as np
 import os
 
-def save_result(i, weights, train_loss=None, test_loss=None, test_accuracy=None):
+def save_result(i, weights, train_loss=None, test_loss=None, test_accuracy=None, mu=None, sigma=None):
     if not os.path.exists("..//results//"):
         os.makedirs("..//results//")
     f = open("..//results//all_results.txt", "a")
@@ -33,6 +33,14 @@ def save_result(i, weights, train_loss=None, test_loss=None, test_accuracy=None)
     if test_accuracy:
         f.write("\nTest accuracy: ")
         f.write(str(test_accuracy))
+    
+    if mu[0]:
+        f.write("\nFeatures mean: ")
+        f.write(str(mu))  
+        
+    if sigma[0]:
+        f.write("\nFeatures sigma: ")
+        f.write(str(sigma))    
     
     f.write("\nIterations: ")
     f.write(str(i))
