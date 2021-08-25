@@ -11,15 +11,14 @@ import subprocess
 from os import path
 
 # edit:
-locker_count = 30
+locker_count = 150
+LEARNCONFIG_NAME = "experiment8_9" # learning hyperparameters config
 
 
 SETTINGS_DIRECTORY = "..//settings//config_{}.json"
 CONFIG_NAME = "experiment" # connection config
-LEARNCONFIG_NAME = "experiment5" # learning hyperparameters config
-
 # For this experiment, the lockers all reside on one location
-STATIC_LOCKER_IP = "192.168.0.24"
+STATIC_LOCKER_IP = "192.168.0.11"
 # The lockers will be generated from the following port iteratively
 STATIC_LOCKER_PORT = 5050
 

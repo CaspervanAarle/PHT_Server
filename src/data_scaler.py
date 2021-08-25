@@ -18,7 +18,7 @@ class Scaler():
         return (x - self.mu) / self.sigma
     
     def get_mu(self):
-        return self.mu
+        return list(self.mu)
     
     def get_sigma(self):
-        return self.sigma
+        return list(self.sigma)

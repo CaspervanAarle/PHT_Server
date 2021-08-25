@@ -9,7 +9,7 @@ import threading, queue
 import time
 import other
 
-TIMEOUT = 60
+TIMEOUT = 120
 
 finished = False
 

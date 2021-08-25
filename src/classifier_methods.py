@@ -42,10 +42,7 @@ class LogReg():
     def gradient(self, X, Y):
         X = np.array(X)
         Y = np.array(Y)
-        
         Y_sig = self.call(X)
-        # Computes the gradient of the cost function at the point theta
-        print(self.cost(X,Y))
         return (1 / len(X)) * np.dot(X.T, Y_sig - Y)
     
     def get_weights(self):
@@ -57,9 +54,6 @@ class LogReg():
         return 
     
     def cost(self, X, Y):
-        '''
-        Cost = (labels*log(predictions) + (1-labels)*log(1-predictions) ) / len(labels)
-        '''
         X = np.array(X)
         Y = np.array(Y)
         predictions = self.call(X)

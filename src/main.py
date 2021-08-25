@@ -21,6 +21,8 @@ from earlystopper import EarlyStopper
 import other
 from sklearn.model_selection import ShuffleSplit, train_test_split
 import data_scaler
+import time
+from datetime import datetime
 
 # homomorphic encryption for mean and average
 from phe import paillier
@@ -32,12 +34,12 @@ from ipc_client import IPC_Client
 TEST_SPLIT = 0
 
 # shufflesplit settings:
-AMOUNT_OF_ITERATIONS = 5 # only used in shufflesplit optimization
-VALIDATION_SPLIT = 0.2   # only used in shufflesplit optimization
+#AMOUNT_OF_ITERATIONS = 5 # only used in shufflesplit optimization
+#VALIDATION_SPLIT = 0.2   # only used in shufflesplit optimization
 
 
 def start():   
-    ### 1) setup
+    ### setup
     connections = []
     config, learn_settings = config_setup.setup()
     print(str(config).replace(', ',',\n '))
@@ -51,26 +53,33 @@ def start():
             print("Locker connected: " + locker['locker_ip'] + " " + locker['host_port'])
     assert len(connections) > 0
     
-    ### 2) train-test split       
+    ### create train-test split       
     if(TEST_SPLIT > 0):
         conn_train_valid, conn_test = train_test_split(connections, test_size=TEST_SPLIT, random_state=0)
     else:
         conn_train_valid, conn_test = connections, []
     print("test size: {}".format(len(conn_test)))
                 
-    ### 2.1) shufflesplit optimization         
-    if(learn_settings["mode"] == "SHUFFLESPLIT"):
-        rs = ShuffleSplit(n_splits=AMOUNT_OF_ITERATIONS, test_size=VALIDATION_SPLIT, random_state=0)
-        loss_list = []
-        for train_index, validation_index in rs.split(list(range(len(conn_train_valid)))):
-            print("TRAIN:", train_index, "\nVALIDATION:", validation_index)
-            loss = train_model(np.array(conn_train_valid)[train_index], np.array(conn_train_valid)[validation_index], learn_settings)
-            loss_list.append(loss)
-        out.save_multi_result(loss_list)
-            
-    ### 2.2) normal training    
-    if(learn_settings["mode"] == "NORMAL"):
-        loss = train_model(conn_train_valid, conn_test, learn_settings)
+    ### training    
+    scaler, model = train_model(conn_train_valid, conn_test, learn_settings)
+        
+    ### save model
+    print("[INFO] saving model")
+    name = "experiment_" + datetime.now().strftime("%Y%m%d_%H%M%S")
+    if scaler is None:
+        out.save_model(name, model, {"n_nodes":len(config['lockers']),
+                                            "input_vars":learn_settings["var_list"] ,
+                                            "target_vars":learn_settings["target_list"]})        
+    else:
+        out.save_model(name, model, {"n_nodes":len(config['lockers']),
+                                            "input_vars":learn_settings["var_list"] ,
+                                            "target_vars":learn_settings["target_list"],
+                                            "mu_list":scaler.get_mu(),
+                                            "sigma_list":scaler.get_sigma()})
+    print("[INFO] model saved as:\n" + name)
+    
+    print("[INFO] ended")
+    time.sleep(60)
     
     
     
@@ -89,9 +98,6 @@ def train_model(conn_training, conn_test, learn_settings):
     else:
         otm = optimizer(model, learn_settings["learning_rate"])
     
-    # termination object
-    earlystopper = EarlyStopper()
-    
     if(learn_settings["standardization"]):
         ### request encrypted means for standardization
         """
@@ -101,8 +107,8 @@ def train_model(conn_training, conn_test, learn_settings):
         wt = other.set_request_message([enc_means,""], 4)
         l_n = saggregator.request(conn_training, wt)
         l_n = saggregator.request(conn_test, wt)
-        
         """
+        
         ### request encrypted stdev for standardization
         
         """
@@ -131,6 +137,8 @@ def train_model(conn_training, conn_test, learn_settings):
             f = scaler.scale(f)
             wt = other.set_request_message([f,""], 12)
             l_n = saggregator.request([c], wt)
+    else:
+        scaler = None
         
         
         
@@ -141,17 +149,20 @@ def train_model(conn_training, conn_test, learn_settings):
         weights = model.get_weights()
         
         ### lockers request without secure aggregation
-        """
         wt = other.set_request_message(weights, 1)
         l_n = saggregator.request(conn_training, wt)
-        """
+        
         ### lockers request with secure aggregation
+        """
         wt = other.set_request_message(["",""], 7)
         l_n = saggregator.request(conn_training, wt)
         wt = other.set_request_message([l_n,""], 8)
         l_n = saggregator.request(conn_training, wt)
         wt = other.set_request_message(weights, 9)
         l_n = saggregator.request(conn_training, wt)
+        """
+        
+        ### only update if no errors
         if(len(l_n) == len(conn_training)):
             weights = otm.update_weights(l_n)
         i += 1
@@ -162,9 +173,7 @@ def train_model(conn_training, conn_test, learn_settings):
             loss_list = saggregator.request(conn_training, wt)
             metric_train = sum(loss_list)/len(conn_training)
             print("Train loss: {}".format(metric_train))
-            # earlystopping:
-            if earlystopper.check_terminate(metric_train):
-                break
+
         
         ### check test loss
         if len(conn_test) > 0 and learn_settings["calc_test_loss"]:
@@ -173,10 +182,7 @@ def train_model(conn_training, conn_test, learn_settings):
             metric_test = sum(loss_list)/len(conn_test)
             print("Test loss: {}".format(metric_test))
             
-        # check if minimum loss is reached
-        if earlystopper.check_terminate(metric_train):
-            break
-
+        
     ### accuracy request
     test_accuracy = None
     wt = other.set_request_message(weights, 2)
@@ -188,21 +194,13 @@ def train_model(conn_training, conn_test, learn_settings):
     train_loss = sum(saggregator.request(conn_training, wt))/len(conn_training)
     
     ### test loss
-    test_loss = None
     if(len(conn_test) > 0):
         test_loss = sum(saggregator.request(conn_test, wt))/len(conn_test)
-        
-    ### save results
-    out.save_result(i+1, weights, train_loss, test_loss, test_accuracy, scaler.get_mu(), scaler.get_sigma())
     
-    ### return valid loss
-    if(len(conn_test) > 0):
-        return test_loss
-    else:
-        return train_loss
+    
+    return scaler, model
+    
 
-   
-    
 if __name__ == "__main__" :
         print("[INFO] server is starting...")
         try:
