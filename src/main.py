@@ -23,6 +23,7 @@ from sklearn.model_selection import ShuffleSplit, train_test_split
 import data_scaler
 import time
 from datetime import datetime
+from stopwatch import Stopwatch
 
 # homomorphic encryption for mean and average
 from phe import paillier
@@ -99,7 +100,7 @@ def train_model(conn_training, conn_test, learn_settings):
         otm = optimizer(model, learn_settings["learning_rate"])
     
     if(learn_settings["standardization"]):
-        ### request encrypted means for standardization
+        ### request homomorphically encrypted means for standardization
         """
         wt = other.set_request_message(["",""], 3)
         l_n = saggregator.request(conn_training, wt)
@@ -109,7 +110,7 @@ def train_model(conn_training, conn_test, learn_settings):
         l_n = saggregator.request(conn_test, wt)
         """
         
-        ### request encrypted stdev for standardization
+        ### request homomorphically encrypted stdev for standardization
         
         """
         wt = other.set_request_message(["",""], 5)
@@ -144,23 +145,29 @@ def train_model(conn_training, conn_test, learn_settings):
         
     print("[INFO] starting learning loop")
     i = 0
+    sw = Stopwatch()
     while i < learn_settings["max_iter"]:
+        if i == 2:
+            sw = Stopwatch()
+        sw.start()
         print("Iteration: {}".format(i+1))
         weights = model.get_weights()
         
         ### lockers request without secure aggregation
+        """
         wt = other.set_request_message(weights, 1)
         l_n = saggregator.request(conn_training, wt)
+        """
         
         ### lockers request with secure aggregation
-        """
+        
         wt = other.set_request_message(["",""], 7)
-        l_n = saggregator.request(conn_training, wt)
+        l_n = saggregator.request(conn_training, wt, sw)
         wt = other.set_request_message([l_n,""], 8)
-        l_n = saggregator.request(conn_training, wt)
+        l_n = saggregator.request(conn_training, wt, sw)
         wt = other.set_request_message(weights, 9)
-        l_n = saggregator.request(conn_training, wt)
-        """
+        l_n = saggregator.request(conn_training, wt, sw)
+        
         
         ### only update if no errors
         if(len(l_n) == len(conn_training)):
@@ -181,7 +188,9 @@ def train_model(conn_training, conn_test, learn_settings):
             loss_list = saggregator.request(conn_test, wt)
             metric_test = sum(loss_list)/len(conn_test)
             print("Test loss: {}".format(metric_test))
-            
+        
+        sw.stop()
+    print(sw.duration/8)
         
     ### accuracy request
     test_accuracy = None

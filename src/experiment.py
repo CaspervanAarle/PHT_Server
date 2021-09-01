@@ -11,8 +11,8 @@ import subprocess
 from os import path
 
 # edit:
-locker_count = 150
-LEARNCONFIG_NAME = "experiment8_9" # learning hyperparameters config
+locker_count = 7
+LEARNCONFIG_NAME = "experiment9_2" # learning hyperparameters config
 
 
 SETTINGS_DIRECTORY = "..//settings//config_{}.json"

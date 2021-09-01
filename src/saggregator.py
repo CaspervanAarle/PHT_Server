@@ -14,10 +14,10 @@ TIMEOUT = 120
 finished = False
 
     
-def request(connections, message):
+def request(connections, message, sw=None):
     print("[INFO] Sending {} requests to {} nodes".format(other.get_requests_list()[message[2]],len(connections)))
     q = queue.Queue()
-    thread = threading.Thread(target=aggregate_results, args=(q, connections, message))
+    thread = threading.Thread(target=aggregate_results, args=(q, connections, message, sw))
     thread.start()
     
     t_ = time.time()
@@ -29,13 +29,17 @@ def request(connections, message):
     print(f"[INFO] Server data from {len(list(q.queue))} nodes after finishing")
     return list(q.queue)
     
-def aggregate_results(q, connections, message):
+def aggregate_results(q, connections, message, sw=None):
     threads = [threading.Thread(target=data_request, args=(q, c, message)) for c in connections]
     for t in threads:
         t.start()
+    if sw is not None:
+        sw.stop()
     print("[INFO] Start receiving")
     for t in threads:
         t.join()
+    if sw is not None:
+        sw.start()
         
 def data_request(q, connection, message):
     msg = connection.request(message)
